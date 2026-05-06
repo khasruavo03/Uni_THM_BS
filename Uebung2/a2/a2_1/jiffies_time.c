@@ -10,6 +10,7 @@
 #include <linux/uaccess.h>
 #include <linux/slab.h>
 #include <linux/version.h>
+#include <linux/string.h>
 
 #define BUFFER_SIZE 128
 
@@ -70,25 +71,30 @@ static int proc_init(void)
 /* This function is called when the module is removed. */
 static void proc_exit(void) {
         // removes the /proc/jiffies and /proc seconds entry
-        /*
-         * your code here
-         *
-         */
+        remove_proc_entry(PROC_NAME, NULL);
+        remove_proc_entry(PROC2_NAME, NULL);
+        printk(KERN_INFO "/proc/%s removed\n", PROC_NAME);
+        printk(KERN_INFO "/proc/%s removed\n", PROC2_NAME);
 }
 /* call this function when /proc/jiffies is read */
 static char * get_mod_jiffies() {
-        /*
-         * your code here
-         *
-         */
+        static char buffer[BUFFER_SIZE];
+
+        sprintf(buffer, "%lu\n", jiffies);
+
+        return buffer;
 }
 
 /* call this function when /proc/seconds is read */
 static char * get_mod_seconds() {
-        /*
-         * your code here
-         *
-         */
+         static char buffer[BUFFER_SIZE];
+        unsigned long seconds;
+
+        seconds = (jiffies - jiffies_ref) / HZ;
+
+        sprintf(buffer, "%lu\n", seconds);
+
+        return buffer;
 }
 
 /**
@@ -123,10 +129,15 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
         proc_file_name=file->f_path.dentry->d_iname;
 
         /* check which file name has been read [jiffies/seconds] and dispatch! */
-        /*
-         * your code here
-         *
-         */
+        if (strcmp(proc_file_name, PROC_NAME) == 0) {
+
+                rv = sprintf(buffer, "%s", get_mod_jiffies());
+
+        } else if (strcmp(proc_file_name, PROC2_NAME) == 0) {
+
+                rv = sprintf(buffer, "%s", get_mod_seconds());
+
+        }
         
         
         // copies the contents of buffer to userspace usr_buf
