@@ -1,3 +1,0 @@
-break zahlenliste.c:97
-
-set exec-wrapper logging enabled
