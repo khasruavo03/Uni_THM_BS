@@ -1,0 +1,3 @@
+[submodule "betriebssysteme_public"]
+	path = betriebssysteme_public
+	url = git@git.thm.de:arin07/betriebssysteme_public.git
