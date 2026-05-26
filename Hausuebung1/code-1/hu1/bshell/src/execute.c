@@ -250,11 +250,14 @@ int check_background_execution(Command * cmd){
     case C_AND:
     case C_PIPE:
     case C_SEQUENCE:
+        
         /*
          * last command in sequence defines whether background or
          * forground execution is specified.
          */
+
         lst = cmd->command_sequence->command_list;
+        
         while (lst !=NULL){
             background = ((SimpleCommand*) lst->head)->background;
             lst=lst->tail;
@@ -286,21 +289,12 @@ int execute(Command * cmd){
     case C_OR:
     case C_AND:
     case C_SEQUENCE:
-        printf("[%s] AND, OR and SEQUENCES  are not yet implemented ... do it ... \n", __func__);
-        /** Iteration through the command list!
-         * lst = cmd->command_sequence->command_list;
-         * while (lst !=NULL){
-         *
-         *    ^^
-         *    ||
-         *    || code is missing here
-         *    ||
-         *    vv
-         *    
-         *    lst=lst->tail;
-         *
-         * }
-         */
+        lst = cmd->command_sequence->command_list;
+        while (lst != NULL) {
+            SimpleCommand *simpleCmd = (SimpleCommand*) lst->head;
+            res = do_execute_simple(simpleCmd, simpleCmd->background);
+            lst = lst->tail;
+        }
         break;
     case C_PIPE:
         printf("[%s] PIPES are not yet implemented ... do it ... \n", __func__);
