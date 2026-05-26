@@ -152,41 +152,32 @@ static int do_execute_simple(SimpleCommand *cmd_s, int background){
     }
     if (strcmp(cmd_s->command_tokens[0],"exit")==0){
         exit(0);
-
+    } else if (strcmp(cmd_s->command_tokens[0], "cd") == 0) {
+        char *path = cmd_s -> command_tokens[1];
+        /* HOME Verzeichnis*/
+        if (path == NULL || strcmp(path, "~") == 0)
+        {
+            path = getenv("HOME");
+        }
+        /*Fehler beim Ändern der Directories*/
+        if (chdir(path) != 0)
+        {
+            /* Fehlermeldung Behandlung*/
+            perror("cd");
+            return 1;
+        }
+        return 0;
 /* do not modify this */
 #ifndef NOLIBREADLINE
     } else if (strcmp(cmd_s->command_tokens[0],"hist")==0){
         return builtin_hist(cmd_s->command_tokens);
 #endif /* NOLIBREADLINE */
-    } else if (strcmp(cmd_s->command_tokens[0], "cd") == 0)
-    {
-        printf("Kommand empfangen");
-
-        char *path = cmd_s-> command_tokens[1];
-        if (path == NULL) {
-            path = getenv("HOME");
-        }
-
-        if (strcmp(path, "~") == 0) {
-            path = getenv("HOME");
-        }
-
-        if (chdir(path) != 0) {
-            perror("cd");
-            return -1;
-        }
-
-        return 0;
-
     } else {
         return execute_fork(cmd_s, background);
     }
-
     fprintf(stderr, "This should never happen!\n");
     exit(1);
 }
-
-
 
 /*
  * check if the command is to be executed in back- or foreground.
