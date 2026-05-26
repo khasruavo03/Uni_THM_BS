@@ -109,8 +109,56 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
          * handle redirections here
          */
         if (cmd_s->redirections != NULL){
-            printf("Handling of redirection is still missing ... implement it!\n");
-            exit(0);
+            // printf("Handling of redirection is still missing\n");
+            
+            List *lst = cmd_s->redirections;
+
+            while (lst != NULL) {
+                Redirection *redir = (Redirection*) lst-> head;
+                int fd;
+
+                if (redir->r_mode == M_READ) {
+                    fd = open(redir->u.r_file, O_RDONLY);
+
+                    if (fd < 0) {
+                        perror("open");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    dup2(fd, STDIN_FILENO);
+                    close(fd);
+                } else if (redir->r_mode == M_WRITE) {
+                    fd = open(
+                        redir->u.r_file, 
+                        O_WRONLY | O_CREAT | O_TRUNC,
+                        0644
+                    );
+
+                    if(fd < 0){
+                        perror("open");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    dup2(fd, STDOUT_FILENO);
+                    close(fd);
+                } else if(redir->r_mode == M_APPEND) {
+                    fd = open(
+                        redir->u.r_file,
+                        O_WRONLY | O_CREAT | O_APPEND,
+                        0644
+                    );
+                    
+                    if (fd < 0){
+                        perror("open");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    dup2(fd, STDOUT_FILENO);
+                    close(fd);
+                }
+
+                lst = lst->tail;
+            }
         }
         if (execvp(command[0], command) == -1){
             fprintf(stderr, "-bshell: %s : command not found \n", command[0]);
