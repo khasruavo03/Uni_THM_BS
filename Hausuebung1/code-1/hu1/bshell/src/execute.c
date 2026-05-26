@@ -109,55 +109,35 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
          * handle redirections here
          */
         if (cmd_s->redirections != NULL){
-            // printf("Handling of redirection is still missing\n");
-            
-            List *lst = cmd_s->redirections;
-
-            while (lst != NULL) {
-                Redirection *redir = (Redirection*) lst-> head;
+            List* lst = cmd_s->redirections; 
+            while(lst != NULL) {
+                Redirection *redir = (Redirection *) lst->head;
                 int fd;
 
-                if (redir->r_mode == M_READ) {
-                    fd = open(redir->u.r_file, O_RDONLY);
-
-                    if (fd < 0) {
-                        perror("open");
-                        exit(EXIT_FAILURE);
-                    }
-
-                    dup2(fd, STDIN_FILENO);
-                    close(fd);
-                } else if (redir->r_mode == M_WRITE) {
-                    fd = open(
-                        redir->u.r_file, 
-                        O_WRONLY | O_CREAT | O_TRUNC,
-                        0644
-                    );
-
-                    if(fd < 0){
-                        perror("open");
-                        exit(EXIT_FAILURE);
-                    }
-
-                    dup2(fd, STDOUT_FILENO);
-                    close(fd);
-                } else if(redir->r_mode == M_APPEND) {
-                    fd = open(
-                        redir->u.r_file,
-                        O_WRONLY | O_CREAT | O_APPEND,
-                        0644
-                    );
-                    
-                    if (fd < 0){
-                        perror("open");
-                        exit(EXIT_FAILURE);
-                    }
-
-                    dup2(fd, STDOUT_FILENO);
-                    close(fd);
+                // Fehlerkontrolle
+                if (fd < 0) {
+                    perror("bshell:Redirections open failed");
+                    exit(EXIT_FAILURE);
                 }
 
-                lst = lst->tail;
+                if(redir->r_mode == M_READ) {
+                    // Datei öffnen und nur lesen
+                    fd = open(redir->u.r_file, O_RDONLY);
+                    dup2(fd, STDIN_FILENO); // Kanal 0
+                } else if (redir->r_mode == M_WRITE) {
+                    // Datei öffnen und Schreiben, Erstellen, falls nichts vorhanden oder Kürzen, falls vorhanden
+                    fd = open(redir->u.r_file, O_WRONLY | O_CREAT, O_TRUNC, 0644);
+                    dup2(fd, STDOUT_FILENO); // Kanal 1
+                } else if (redir->r_mode = M_APPEND) {
+                    // Datei öffnen und Schreiben, Erstellen, falls nichts vorhanden oder Anfügen
+                    fd = open(redir->u.r_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+                    dup2(fd, STDOUT_FILENO); // Kanal 1
+                }
+
+                //Den ungenutzen, alten Descriptor zu schließen
+                close(fd);
+
+                lst = lst->tail; // Nächste Umlenkung
             }
         }
         if (execvp(command[0], command) == -1){
@@ -198,27 +178,33 @@ static int do_execute_simple(SimpleCommand *cmd_s, int background){
     if (cmd_s==NULL){
         return 0;
     }
+
+    // Exit Command
     if (strcmp(cmd_s->command_tokens[0],"exit")==0){
         exit(0);
+
+    // Change Directory
     } else if (strcmp(cmd_s->command_tokens[0], "cd") == 0) {
-        char *path = cmd_s -> command_tokens[1];
-        /* HOME Verzeichnis*/
-        if (path == NULL || strcmp(path, "~") == 0)
-        {
+        char* path = cmd_s->command_tokens[1];
+        // HOME Directory
+        if (path == NULL || strcmp(path, "~") == 0) {
             path = getenv("HOME");
         }
-        /*Fehler beim Ändern der Directories*/
-        if (chdir(path) != 0)
-        {
-            /* Fehlermeldung Behandlung*/
+
+        // Fehlermeldung 
+        if (chdir(path) != 0) {
             perror("cd");
             return 1;
         }
+
         return 0;
+
 /* do not modify this */
 #ifndef NOLIBREADLINE
+    // History
     } else if (strcmp(cmd_s->command_tokens[0],"hist")==0){
         return builtin_hist(cmd_s->command_tokens);
+    
 #endif /* NOLIBREADLINE */
     } else {
         return execute_fork(cmd_s, background);
@@ -250,14 +236,11 @@ int check_background_execution(Command * cmd){
     case C_AND:
     case C_PIPE:
     case C_SEQUENCE:
-        
         /*
          * last command in sequence defines whether background or
          * forground execution is specified.
          */
-
         lst = cmd->command_sequence->command_list;
-        
         while (lst !=NULL){
             background = ((SimpleCommand*) lst->head)->background;
             lst=lst->tail;
@@ -285,16 +268,51 @@ int execute(Command * cmd){
         res=do_execute_simple((SimpleCommand*) cmd->command_sequence->command_list->head, execute_in_background);
         fflush(stderr);
         break;
-
+    
+    // Wenn fehlgeschlagen
     case C_OR:
-    case C_AND:
-    case C_SEQUENCE:
         lst = cmd->command_sequence->command_list;
+
         while (lst != NULL) {
             SimpleCommand *simpleCmd = (SimpleCommand*) lst->head;
-            res = do_execute_simple(simpleCmd, simpleCmd->background);
+            res = do_exercise_simple(simpleCmd, 0);
+
+            if (res == 0) {
+                break;
+            }
+
             lst = lst->tail;
         }
+        break;
+
+    // Wenn erfolgreich war
+    case C_AND:
+        lst = cmd->command_sequence->command_list;
+
+        while (lst != NULL) {
+            SimpleCommand *simpleCmd = (SimpleCommand*) lst->head;
+            res = do_execute_simple(simpleCmd, 0);
+
+            if (res != 0) {
+                break;
+            }
+
+            lst = lst-> tail;
+        }
+
+        break;
+    case C_SEQUENCE:
+        //Iteration through the command list!
+        lst = cmd->command_sequence->command_list;
+        
+        while (lst !=NULL){
+            SimpleCommand* simpleCmd = (SimpleCommand*) lst->head;
+            // Nicht: res = do_execute_simple(simpleCmd, 0);
+            res = do_execute_simple(simpleCmd, simpleCmd->background);
+            lst=lst->tail;
+    
+        }
+
         break;
     case C_PIPE:
         printf("[%s] PIPES are not yet implemented ... do it ... \n", __func__);
