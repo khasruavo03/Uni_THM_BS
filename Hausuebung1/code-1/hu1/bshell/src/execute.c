@@ -105,6 +105,18 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
         /* child */
         signal(SIGINT, SIG_DFL);
         signal(SIGTTOU, SIG_DFL);
+
+        /* if(in_fd >= 0) {
+            dup2(in_fd, STDIN_FILENO);
+            close(in_fd);
+        }
+
+        if (out_fd >= 0) {
+            dup2(out_fd, STDOUT_FILENO);
+            close(out_fd);
+        }
+            */
+
         /*
          * handle redirections here
          */
@@ -114,25 +126,40 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
                 Redirection *redir = (Redirection *) lst->head;
                 int fd;
 
-                // Fehlerkontrolle
-                if (fd < 0) {
-                    perror("bshell:Redirections open failed");
-                    exit(EXIT_FAILURE);
-                }
-
                 if(redir->r_mode == M_READ) {
                     // Datei öffnen und nur lesen
                     fd = open(redir->u.r_file, O_RDONLY);
-                    dup2(fd, STDIN_FILENO); // Kanal 0
+                    if (fd >= 0) {
+                        dup2(fd, STDIN_FILENO); // Kanal 0
+                    } else {
+                        perror("bshell:Redirections open or dup2 failed");
+                        // exit(EXIT_FAILURE);
+                    }
                 } else if (redir->r_mode == M_WRITE) {
                     // Datei öffnen und Schreiben, Erstellen, falls nichts vorhanden oder Kürzen, falls vorhanden
-                    fd = open(redir->u.r_file, O_WRONLY | O_CREAT, O_TRUNC, 0644);
-                    dup2(fd, STDOUT_FILENO); // Kanal 1
-                } else if (redir->r_mode = M_APPEND) {
+                    fd = open(redir->u.r_file, O_WRONLY | O_CREAT| O_TRUNC, 0644);
+                    if (fd >= 0) {
+                        dup2(fd, STDOUT_FILENO); // Kanal 1
+                    } else {
+                        perror("bshell:Redirections open or dup2 failed");
+                        // exit(EXIT_FAILURE);
+                    }
+                } else if (redir->r_mode == M_APPEND) {
                     // Datei öffnen und Schreiben, Erstellen, falls nichts vorhanden oder Anfügen
                     fd = open(redir->u.r_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
-                    dup2(fd, STDOUT_FILENO); // Kanal 1
+                    if (fd >= 0) {
+                        dup2(fd, STDOUT_FILENO); // Kanal 1
+                    } else {
+                        perror("bshell:Redirections open or dup2 failed");
+                        // exit(EXIT_FAILURE);
+                    }
                 }
+
+                /* // Fehlerkontrolle
+                if (fd < 0) {
+                    perror("bshell:Redirections open failed");
+                    exit(EXIT_FAILURE);
+                } */
 
                 //Den ungenutzen, alten Descriptor zu schließen
                 close(fd);
@@ -151,22 +178,26 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
 
     } else {
         /*parent*/
-        setpgid(pid, pid);
+        setpgid(pid, pid); // Setzt neue Prozessgruppe
         if (background == 0) {
             /* wait only if no background process */
+            
+            // Übergibt Terminalkontrolle an Child-Prozess
             tcsetpgrp(fdtty, pid);
 
-            /**
-             * the handling here is far more complicated than this!
-             * vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-             */
+            // Speicher Exit-Status
+            int status;
 
-            wpid= waitpid(pid, NULL, 0);
+            // Wartet bis Child fertig ist
+            wpid= waitpid(pid, &status, 0);
 
-            //^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+            // Gibt Terminalkontrolle zurück an Shell
             tcsetpgrp(fdtty, shell_pid);
-            return 0;
+
+            // Prüft, ob Prozess normal beendet würde
+            // Wenn ja? - Liefert Exit-Code zurück (Was wichtig für AND und OR ist)
+            // Wenn nein? - Fehlerfall
+            return WIFEXITED(status)? WEXITSTATUS(status) : 1;
         }
     }
 
@@ -211,6 +242,84 @@ static int do_execute_simple(SimpleCommand *cmd_s, int background){
     }
     fprintf(stderr, "This should never happen!\n");
     exit(1);
+}
+
+static int execute_pipeline(Command *cmd) {
+    List *lst = cmd->command_sequence->command_list;
+
+    int in_fd = -1; //liest aus der vorherige Pipe
+    pid_t pids[128];
+    int pid_count = 0;
+
+    while(lst != NULL) {
+        SimpleCommand *simpleCmd = (SimpleCommand*) lst->head;
+        int fd[2] = {-1, -1};
+
+        if (lst->tail != NULL && pipe(fd) < 0) {
+            perror("pipe");
+            return 1;
+        }
+        
+        pid_t pid = fork();
+        
+        //KIndprozess
+        if (pid == 0) {
+            if (in_fd >= 0) {
+                dup2(in_fd, STDIN_FILENO);
+            } 
+            
+            if (fd[1] >= 0) {
+                dup2(fd[1], STDOUT_FILENO);
+            }
+
+            // Was nicht gebraucht wird, wird geschlossen
+            if (in_fd >= 0) {
+                close(in_fd);
+            } 
+            if (fd[0] >= 0) {
+                close(fd[0]);
+            } 
+            if (fd[1] >= 0) {
+                close(fd[1]);
+            }
+
+            execvp(simpleCmd->command_tokens[0], simpleCmd->command_tokens);
+
+            perror("execvp");
+            exit(EXIT_FAILURE);
+        
+        // Parent
+        } else if (pid > 0) {
+
+            pids[pid_count++] = pid;
+
+            if (in_fd >= 0) {
+                close(in_fd);
+            }
+            if (fd[1] >= 0) {
+                close(fd[1]);
+            }
+
+            in_fd = fd[0];
+
+        } else {
+            perror("fork");
+        }
+
+        lst = lst->tail;
+    }
+
+    if (in_fd >= 0) {
+        close(in_fd);
+    } 
+
+    int status;
+
+    for(int i = 0; i < pid_count; i++) {
+        waitpid(pids[i], &status, 0);
+    }
+
+    return WIFEXITED(status)? WEXITSTATUS(status) : 1;
 }
 
 /*
@@ -275,7 +384,7 @@ int execute(Command * cmd){
 
         while (lst != NULL) {
             SimpleCommand *simpleCmd = (SimpleCommand*) lst->head;
-            res = do_exercise_simple(simpleCmd, 0);
+            res = do_execute_simple(simpleCmd, 0);
 
             if (res == 0) {
                 break;
@@ -315,7 +424,32 @@ int execute(Command * cmd){
 
         break;
     case C_PIPE:
-        printf("[%s] PIPES are not yet implemented ... do it ... \n", __func__);
+        res = execute_pipeline(cmd);
+        /* int in_fd = -1;
+        List *lst = cmd->command_sequence->command_list;
+
+        while (lst != NULL) {
+            int fd[2] = {-1, -1};
+
+            // 
+            if (lst->tail != NULL) { 
+                pipe(fd);
+            }
+            SimpleCommand *simpleCmd = (SimpleCommand*) lst->head;
+            res = execute_fork(simpleCmd, 0, in_fd, fd[1]);
+
+            if(in_fd >= 0) {
+                close(in_fd);
+            }
+
+            if(fd[1] >= 0) {
+                close(fd[1]);
+            }
+
+            in_fd = fd[0];
+            lst = lst->tail;
+            
+        }*/
         break;
     default:
         printf("[%s] unhandled command type [%i]\n", __func__, cmd->command_type);
