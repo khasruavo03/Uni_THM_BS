@@ -133,7 +133,7 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
                         dup2(fd, STDIN_FILENO); // Kanal 0
                     } else {
                         perror("bshell:Redirections open or dup2 failed");
-                        // exit(EXIT_FAILURE);
+                        exit(EXIT_FAILURE);
                     }
                 } else if (redir->r_mode == M_WRITE) {
                     // Datei öffnen und Schreiben, Erstellen, falls nichts vorhanden oder Kürzen, falls vorhanden
@@ -142,7 +142,7 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
                         dup2(fd, STDOUT_FILENO); // Kanal 1
                     } else {
                         perror("bshell:Redirections open or dup2 failed");
-                        // exit(EXIT_FAILURE);
+                        exit(EXIT_FAILURE);
                     }
                 } else if (redir->r_mode == M_APPEND) {
                     // Datei öffnen und Schreiben, Erstellen, falls nichts vorhanden oder Anfügen
@@ -151,7 +151,7 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
                         dup2(fd, STDOUT_FILENO); // Kanal 1
                     } else {
                         perror("bshell:Redirections open or dup2 failed");
-                        // exit(EXIT_FAILURE);
+                        exit(EXIT_FAILURE);
                     }
                 }
 
@@ -229,7 +229,11 @@ static int do_execute_simple(SimpleCommand *cmd_s, int background){
         }
 
         return 0;
-
+    /* Advanced Shell
+    *   } else if (strcmp(cmd_s->command_tokens[0], "status") == 0) {
+        print_status();
+        return 0;*/
+        
 /* do not modify this */
 #ifndef NOLIBREADLINE
     // History
@@ -264,6 +268,9 @@ static int execute_pipeline(Command *cmd) {
         
         //KIndprozess
         if (pid == 0) {
+            signal(SIGINT, SIG_DFL);
+            signal(SIGTTOU, SIG_DFL);
+
             if (in_fd >= 0) {
                 dup2(in_fd, STDIN_FILENO);
             } 
