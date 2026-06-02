@@ -424,7 +424,7 @@ int execute(Command * cmd){
         while (lst !=NULL){
             SimpleCommand* simpleCmd = (SimpleCommand*) lst->head;
             // Nicht: res = do_execute_simple(simpleCmd, 0);
-            res = do_execute_simple(simpleCmd, simpleCmd->background);
+            res = do_execute_simple(simpleCmd, execute_in_background);
             lst=lst->tail;
     
         }
