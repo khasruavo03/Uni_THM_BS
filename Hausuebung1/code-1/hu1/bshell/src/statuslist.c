@@ -6,7 +6,7 @@
 #include "statuslist.h"
 
 
-void status_add(pid_t pid, pid_t pgid, const char * name) {
+/* void status_add(pid_t pid, pid_t pgid, const char * name) {
     ProcessInfo *p = malloc(sizeof(ProcessInfo));
     p->pid = pid;
     p->pgid = pgid;
@@ -14,5 +14,5 @@ void status_add(pid_t pid, pid_t pgid, const char * name) {
     p->finished = 0;
 }
 
-status_print() {}
+status_print() {} */
 

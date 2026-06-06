@@ -1,0 +1,18 @@
+{
+    "accepted": true,
+    "immediate_evaluation": false,
+    "log": "[2026-06-02 12:01:01.489756] Received submission be3253da-39cf-4337-9cea-dd25e629c2ab\n[2026-06-02 12:01:01.489905] Ip: 172.18.0.4\n[2026-06-02 12:01:01.489947] Team members: [('Singh', 'Khushi', '5566026')]\n[2026-06-02 12:01:01.503262] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'shell-basic'.\n[2026-06-02 12:01:01.503301] Your submission has the id be3253da-39cf-4337-9cea-dd25e629c2ab.\n[2026-06-02 12:01:01.503497] This assignment is currently not automatically evaluated.\n[2026-06-02 12:01:01.503514] You will receive more information about the evaluation from your lecturer\n",
+    "submission": {
+        "authors": [
+            {
+                "first_name": "Khushi",
+                "last_name": "Singh",
+                "matriculation_number": "5566026"
+            }
+        ],
+        "evaluation_result": null,
+        "id": "be3253da-39cf-4337-9cea-dd25e629c2ab",
+        "timestamp_ns": 1780394461503072910,
+        "upload_log": "[2026-06-02 12:01:01.489756] Received submission be3253da-39cf-4337-9cea-dd25e629c2ab\n[2026-06-02 12:01:01.489905] Ip: 172.18.0.4\n[2026-06-02 12:01:01.489947] Team members: [('Singh', 'Khushi', '5566026')]\n[2026-06-02 12:01:01.503262] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'shell-basic'.\n[2026-06-02 12:01:01.503301] Your submission has the id be3253da-39cf-4337-9cea-dd25e629c2ab.\n[2026-06-02 12:01:01.503497] This assignment is currently not automatically evaluated.\n[2026-06-02 12:01:01.503514] You will receive more information about the evaluation from your lecturer\n\n"
+    }
+}

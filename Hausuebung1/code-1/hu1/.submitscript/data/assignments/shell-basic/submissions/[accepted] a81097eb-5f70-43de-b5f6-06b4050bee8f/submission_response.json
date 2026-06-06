@@ -1,0 +1,18 @@
+{
+    "accepted": true,
+    "immediate_evaluation": false,
+    "log": "[2026-06-02 16:30:39.017506] Received submission a81097eb-5f70-43de-b5f6-06b4050bee8f\n[2026-06-02 16:30:39.017590] Ip: 172.18.0.4\n[2026-06-02 16:30:39.017618] Team members: [('Singh', 'Khushi', '5566026')]\n[2026-06-02 16:30:39.029363] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'shell-basic'.\n[2026-06-02 16:30:39.029402] Your submission has the id a81097eb-5f70-43de-b5f6-06b4050bee8f.\n[2026-06-02 16:30:39.029600] This assignment is currently not automatically evaluated.\n[2026-06-02 16:30:39.029617] You will receive more information about the evaluation from your lecturer\n",
+    "submission": {
+        "authors": [
+            {
+                "first_name": "Khushi",
+                "last_name": "Singh",
+                "matriculation_number": "5566026"
+            }
+        ],
+        "evaluation_result": null,
+        "id": "a81097eb-5f70-43de-b5f6-06b4050bee8f",
+        "timestamp_ns": 1780410639029171642,
+        "upload_log": "[2026-06-02 16:30:39.017506] Received submission a81097eb-5f70-43de-b5f6-06b4050bee8f\n[2026-06-02 16:30:39.017590] Ip: 172.18.0.4\n[2026-06-02 16:30:39.017618] Team members: [('Singh', 'Khushi', '5566026')]\n[2026-06-02 16:30:39.029363] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'shell-basic'.\n[2026-06-02 16:30:39.029402] Your submission has the id a81097eb-5f70-43de-b5f6-06b4050bee8f.\n[2026-06-02 16:30:39.029600] This assignment is currently not automatically evaluated.\n[2026-06-02 16:30:39.029617] You will receive more information about the evaluation from your lecturer\n\n"
+    }
+}
