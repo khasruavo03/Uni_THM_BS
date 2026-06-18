@@ -99,7 +99,7 @@ void unquote_command(Command *cmd){
 
 static int execute_fork(SimpleCommand *cmd_s, int background){
     char ** command = cmd_s->command_tokens;
-    pid_t pid, wpid;
+    pid_t pid;
     pid = fork();
     if (pid==0){
         /* child */
@@ -179,6 +179,13 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
     } else {
         /*parent*/
         setpgid(pid, pid); // Setzt neue Prozessgruppe
+        process_add(pid, pid, command[0]); // Neue Prozessgruppe hinzugefügt
+
+        // Hintergrundsprozesse
+        if (background) {
+            fprintf(stderr, "PID=%d\tPGID=%d\n", pid, pid);
+        }
+
         if (background == 0) {
             /* wait only if no background process */
             
@@ -189,7 +196,10 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
             int status;
 
             // Wartet bis Child fertig ist
-            wpid= waitpid(pid, &status, 0);
+            waitpid(pid, &status, 0);
+
+            // Aktuakisierung
+            // Race Condition: process_update(pid, status);
 
             // Gibt Terminalkontrolle zurück an Shell
             tcsetpgrp(fdtty, shell_pid);
@@ -229,10 +239,11 @@ static int do_execute_simple(SimpleCommand *cmd_s, int background){
         }
 
         return 0;
-    /* Advanced Shell
-    *   } else if (strcmp(cmd_s->command_tokens[0], "status") == 0) {
+
+        // Advanced Shell
+        } else if (strcmp(cmd_s->command_tokens[0], "status") == 0) {
         print_status();
-        return 0;*/
+        return 0;
         
 /* do not modify this */
 #ifndef NOLIBREADLINE
@@ -254,6 +265,8 @@ static int execute_pipeline(Command *cmd) {
     int in_fd = -1; //liest aus der vorherige Pipe
     pid_t pids[128];
     int pid_count = 0;
+
+    pid_t pgid = 0;
 
     while(lst != NULL) {
         SimpleCommand *simpleCmd = (SimpleCommand*) lst->head;
@@ -297,6 +310,13 @@ static int execute_pipeline(Command *cmd) {
         
         // Parent
         } else if (pid > 0) {
+            if (pgid == 0) {
+                pgid = pid;
+            }
+
+            setpgid(pid, pgid);
+
+            process_add(pid, pgid, simpleCmd->command_tokens[0]);
 
             pids[pid_count++] = pid;
 
@@ -320,11 +340,16 @@ static int execute_pipeline(Command *cmd) {
         close(in_fd);
     } 
 
+    tcsetpgrp(fdtty, pids[0]);
+
     int status;
 
     for(int i = 0; i < pid_count; i++) {
         waitpid(pids[i], &status, 0);
+        process_update(pids[i], status);
     }
+
+    tcsetpgrp(fdtty, shell_pid);
 
     return WIFEXITED(status)? WEXITSTATUS(status) : 1;
 }

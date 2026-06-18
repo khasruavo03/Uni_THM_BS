@@ -65,13 +65,31 @@ void disable_signals() {
     disable_signal(SIGTSTP, 0);
 }
 
+static void sigchld_handler(int sig) {
+    int status;
+    pid_t pid;
+    while((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        process_update(pid, status);
+    }
+}
+
 int main(int argc, char *argv[], char **envp) {
     char * line = NULL;
     disable_signals();
+    struct sigaction sig;
+    sig.sa_handler = sigchld_handler;
+    sigemptyset(&sig.sa_mask);
+    sig.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    if(sigaction(SIGCHLD, &sig, NULL)) {
+        perror("signation");
+        exit(EXIT_FAILURE);
+    }
+
+    fdtty = open("/dev/tty", O_RDONLY|O_CLOEXEC);
     shell_pid = getpid();
     setpgid(0, shell_pid);
     tcsetpgrp(fdtty, shell_pid);
-    fdtty = open("/dev/tty", O_RDONLY|O_CLOEXEC);
+    // fdtty = open("/dev/tty", O_RDONLY|O_CLOEXEC);
     int print_commands=0;
     if (argc > 1){
         print_commands = strcmp(argv[1], "--print-commands") ==0 ? 1: 0; 
