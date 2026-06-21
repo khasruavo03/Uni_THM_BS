@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 #include "statuslist.h"
 
@@ -47,6 +48,8 @@ void refersh_status(void) {
             if(r > 0) {
                 p->finished = 1;
                 p->status=status;
+            } else if(r == -1 && errno != ECHILD) {
+                perror("waitpid");
             }
         }
 
