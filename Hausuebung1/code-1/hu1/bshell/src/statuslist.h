@@ -13,7 +13,7 @@ typedef struct ProcessInfo {
     struct ProcessInfo *next;
 } ProcessInfo;
 
-void process_add(pid_t pid, pid_t pgid, const char * name);
+ProcessInfo* process_add(pid_t pid, pid_t pgid, const char * name);
 void process_update(pid_t pid, int status);
 void print_status(void);
 

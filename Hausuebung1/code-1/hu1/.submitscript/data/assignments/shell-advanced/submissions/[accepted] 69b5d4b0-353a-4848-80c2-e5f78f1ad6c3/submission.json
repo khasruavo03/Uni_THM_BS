@@ -1,0 +1,13 @@
+{
+    "authors": [
+        {
+            "first_name": "Khushi",
+            "last_name": "Singh",
+            "matriculation_number": "5566026"
+        }
+    ],
+    "evaluation_result": null,
+    "id": "69b5d4b0-353a-4848-80c2-e5f78f1ad6c3",
+    "timestamp_ns": 1782211817049664452,
+    "upload_log": "[2026-06-23 12:50:17.020441] Received submission 69b5d4b0-353a-4848-80c2-e5f78f1ad6c3\n[2026-06-23 12:50:17.020541] Ip: 172.18.0.4\n[2026-06-23 12:50:17.020596] Team members: [('Singh', 'Khushi', '5566026')]\n[2026-06-23 12:50:17.049863] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'shell-advanced'.\n[2026-06-23 12:50:17.049980] Your submission has the id 69b5d4b0-353a-4848-80c2-e5f78f1ad6c3.\n[2026-06-23 12:50:17.050260] This assignment is currently not automatically evaluated.\n[2026-06-23 12:50:17.050314] You will receive more information about the evaluation from your lecturer\n\n"
+}

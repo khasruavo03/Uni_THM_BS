@@ -21,7 +21,7 @@ Please choose the assignment you want to submit.
  2 - shell-advanced
 Please enter the id of your selection: 
 
-Selected variant 'bshell' for assignment 'shell-basic'.
+Selected variant 'bshell' for assignment 'shell-advanced'.
 === Building submission ===
 Running 'cmake . && make'.
 === Building submission finished ===
@@ -30,13 +30,13 @@ Running 'cmake . && make'.
 === Starting Upload ===
 === Upload finished ===
 === BEGIN Upload Log
-[2026-06-02 16:30:39.017506] Received submission a81097eb-5f70-43de-b5f6-06b4050bee8f
-[2026-06-02 16:30:39.017590] Ip: 172.18.0.4
-[2026-06-02 16:30:39.017618] Team members: [('Singh', 'Khushi', '5566026')]
-[2026-06-02 16:30:39.029363] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'shell-basic'.
-[2026-06-02 16:30:39.029402] Your submission has the id a81097eb-5f70-43de-b5f6-06b4050bee8f.
-[2026-06-02 16:30:39.029600] This assignment is currently not automatically evaluated.
-[2026-06-02 16:30:39.029617] You will receive more information about the evaluation from your lecturer
+[2026-06-23 12:50:17.020441] Received submission 69b5d4b0-353a-4848-80c2-e5f78f1ad6c3
+[2026-06-23 12:50:17.020541] Ip: 172.18.0.4
+[2026-06-23 12:50:17.020596] Team members: [('Singh', 'Khushi', '5566026')]
+[2026-06-23 12:50:17.049863] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'shell-advanced'.
+[2026-06-23 12:50:17.049980] Your submission has the id 69b5d4b0-353a-4848-80c2-e5f78f1ad6c3.
+[2026-06-23 12:50:17.050260] This assignment is currently not automatically evaluated.
+[2026-06-23 12:50:17.050314] You will receive more information about the evaluation from your lecturer
 
 === END Upload Log
 Successfully submitted your solution. Please see the upload log above for more details.

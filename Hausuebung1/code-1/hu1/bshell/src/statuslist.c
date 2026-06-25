@@ -10,7 +10,7 @@
 
 static ProcessInfo *head = NULL;
 
-void process_add(pid_t pid, pid_t pgid, const char * name) {
+ProcessInfo* process_add(pid_t pid, pid_t pgid, const char * name) {
     ProcessInfo *p = malloc(sizeof(ProcessInfo));
     p->pid = pid;
     p->pgid = pgid;
@@ -22,6 +22,8 @@ void process_add(pid_t pid, pid_t pgid, const char * name) {
 
     p->next = head;
     head = p;
+
+    return p;
 }
 
 void process_update(pid_t pid, int status) {
@@ -35,6 +37,9 @@ void process_update(pid_t pid, int status) {
 
         p = p->next;
     }
+
+    // Process not found, use Dummy Entry
+    process_update(-1, status);
 }
 
 void refersh_status(void) {

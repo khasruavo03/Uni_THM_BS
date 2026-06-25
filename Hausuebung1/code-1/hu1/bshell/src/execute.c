@@ -100,6 +100,7 @@ void unquote_command(Command *cmd){
 static int execute_fork(SimpleCommand *cmd_s, int background){
     char ** command = cmd_s->command_tokens;
     pid_t pid;
+    ProcessInfo* new_p = process_add(-1, -1, cmd_s->command_tokens[0]);
     pid = fork();
     if (pid==0){
         /* child */
@@ -179,7 +180,9 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
     } else {
         /*parent*/
         setpgid(pid, pid); // Setzt neue Prozessgruppe
-        process_add(pid, pid, command[0]); // Neue Prozessgruppe hinzugefügt
+        // Neue Prozessgruppe hinzugefügt
+        new_p->pid = pid;
+        new_p->pgid = pid;
 
         // Hintergrundsprozesse
         if (background) {
@@ -196,10 +199,10 @@ static int execute_fork(SimpleCommand *cmd_s, int background){
             int status;
 
             // Wartet bis Child fertig ist
-            waitpid(pid, &status, 0);
-
-            // Aktuakisierung
-            // Race Condition: process_update(pid, status);
+            if(waitpid(pid, &status, 0) == pid) {
+                // Aktuakisierung
+                process_update(pid, status);
+            }
 
             // Gibt Terminalkontrolle zurück an Shell
             tcsetpgrp(fdtty, shell_pid);
@@ -276,11 +279,15 @@ static int execute_pipeline(Command *cmd) {
             perror("pipe");
             return 1;
         }
+
+        ProcessInfo* new_p = process_add(-1, -1, simpleCmd->command_tokens[0]);
         
         pid_t pid = fork();
         
         //KIndprozess
         if (pid == 0) {
+            setpgid(0, pgid);
+            tcsetpgrp(fdtty, getpgid(0));
             signal(SIGINT, SIG_DFL);
             signal(SIGTTOU, SIG_DFL);
 
@@ -316,7 +323,8 @@ static int execute_pipeline(Command *cmd) {
 
             setpgid(pid, pgid);
 
-            process_add(pid, pgid, simpleCmd->command_tokens[0]);
+            new_p->pid = pid;
+            new_p->pgid = pgid;
 
             pids[pid_count++] = pid;
 
@@ -345,8 +353,10 @@ static int execute_pipeline(Command *cmd) {
     int status;
 
     for(int i = 0; i < pid_count; i++) {
-        waitpid(pids[i], &status, 0);
+        if (waitpid(pids[i], &status, 0) == pids[i]) {
+        
         process_update(pids[i], status);
+        }
     }
 
     tcsetpgrp(fdtty, shell_pid);
