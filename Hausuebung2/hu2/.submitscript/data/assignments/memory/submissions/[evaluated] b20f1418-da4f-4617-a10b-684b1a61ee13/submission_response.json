@@ -1,0 +1,18 @@
+{
+    "accepted": true,
+    "immediate_evaluation": true,
+    "log": "[2026-07-07 21:12:22.339723] Received submission b20f1418-da4f-4617-a10b-684b1a61ee13\n[2026-07-07 21:12:22.339822] Ip: 172.18.0.4\n[2026-07-07 21:12:22.339903] Team members: [('Singh', 'Khushi', '5566026')]\n[2026-07-07 21:12:22.354591] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'memory'.\n[2026-07-07 21:12:22.354648] Your submission has the id b20f1418-da4f-4617-a10b-684b1a61ee13.\n[2026-07-07 21:12:22.354953] It will be evaluated shortly. Please check back soon for your results.\n",
+    "submission": {
+        "authors": [
+            {
+                "first_name": "Khushi",
+                "last_name": "Singh",
+                "matriculation_number": "5566026"
+            }
+        ],
+        "evaluation_result": null,
+        "id": "b20f1418-da4f-4617-a10b-684b1a61ee13",
+        "timestamp_ns": 1783451542354339950,
+        "upload_log": "[2026-07-07 21:12:22.339723] Received submission b20f1418-da4f-4617-a10b-684b1a61ee13\n[2026-07-07 21:12:22.339822] Ip: 172.18.0.4\n[2026-07-07 21:12:22.339903] Team members: [('Singh', 'Khushi', '5566026')]\n[2026-07-07 21:12:22.354591] Your submission was ACCEPTED for course 'Betriebssysteme-ss26', assignment 'memory'.\n[2026-07-07 21:12:22.354648] Your submission has the id b20f1418-da4f-4617-a10b-684b1a61ee13.\n[2026-07-07 21:12:22.354953] It will be evaluated shortly. Please check back soon for your results.\n\n"
+    }
+}
